@@ -2,9 +2,13 @@ import tkinter as tk
 
 class Painttk(object):
     def __init__(self):
-        #Initializing selections for color and shape
+        #Initializing selections for color,shape and click coordinates 
         self._currentshape = None
         self._currentcolor = None
+        self._x1 = None
+        self._y1 = None
+        self._x2 = None
+        self._y2 = None
         #Setting up main window
         self._root = tk.Tk()
         self._root.title("Painttk")
@@ -43,6 +47,7 @@ class Painttk(object):
         #Layout canvas
         self._drawingarea = tk.Canvas(master=self._root, bg ="white", height = 300, width=300)
         self._drawingarea.grid(column=1, row= 0)
+        self._drawingarea.bind('<Button-1>', self.draw)
         
 
 
@@ -56,6 +61,42 @@ class Painttk(object):
     def changeColor(self, color):
         self._currentcolor = color
         self._labelcurrentcolor['text'] = 'Current selection: ' + color
+
+    def draw(self, event):
+        if self._currentcolor == None or self._currentshape == None:
+            print("No color or shape selected")
+            return
+        self._x1 = event.x
+        self._y1 = event.y
+        self._drawingarea.unbind("<Button-1>")
+        self._drawingarea.bind("<Button-1>", self.draw2)
+
+    def draw2(self, event):
+        self._x2 = event.x
+        self._y2 = event.y
+        #Here we are adjusting the coordinates according to where the user clicked
+        if self._currentshape == 'rectangle' or self._currentshape == 'oval':
+            if self._x1 - self._x2 > 0:
+                a = self._x1 
+                self._x1 = self._x2
+                self._x2 = a
+            if self._y1 - self._y2 > 0:
+                b = self._y1
+                self._y1 = self._y2
+                self._y2 = b
+        if self._currentshape == 'rectangle':
+            self._drawingarea.create_rectangle(self._x1, self._y1, self._x2, self._y2, fill=self._currentcolor)
+        if self._currentshape == 'oval':
+            self._drawingarea.create_oval(self._x1, self._y1, self._x2, self._y2, fill=self._currentcolor)
+        if self._currentshape == 'line':
+            self._drawingarea.create_line(self._x1, self._y1, self._x2, self._y2, fill=self._currentcolor)
+        self._drawingarea.unbind("<Button-1>")
+        self._drawingarea.bind("<Button-1>", self.draw)
+
+
+        
+        
+
 
 
 
