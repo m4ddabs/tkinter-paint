@@ -1,10 +1,9 @@
 import tkinter as tk
+from selectionmenu import Selectionmenu
 
 class Painttk(object):
     def __init__(self):
         #Initializing selections for color,shape and click coordinates 
-        self._currentshape = None
-        self._currentcolor = None
         self._x1 = None
         self._y1 = None
         self._x2 = None
@@ -17,33 +16,16 @@ class Painttk(object):
         self._root.columnconfigure(1, weight= 2)
         self._root.rowconfigure([0,1], weight= 1)
         #Laying out shape selection menu
-        self._shapeselect = tk.Frame(self._root)
-        self._shapeselect.grid(column=0, row=0)
-        #Adding the widgets to the shape selection menu
-        self._shapetitle = tk.Label(self._shapeselect,text="Shapes")
-        self._shapetitle.grid(column=0, row=0, columnspan= 3)
-        self._rectanglebutton = tk.Button(master = self._shapeselect, text="Rectangle", relief=tk.RAISED, command=lambda shape = "rectangle" : self.changeShape(shape))
-        self._rectanglebutton.grid(column=0, row=1)
-        self._ovalbutton = tk.Button(master = self._shapeselect, text="Oval", relief=tk.RAISED,command=lambda shape = "oval" : self.changeShape(shape))
-        self._ovalbutton.grid(column=1, row=1)
-        self._linebutton = tk.Button(master = self._shapeselect, text="Line", relief=tk.RAISED, command=lambda shape = "line" : self.changeShape(shape))
-        self._linebutton.grid(column=2, row=1)
-        self._labelcurrentshape = tk.Label(master=self._shapeselect, text=("Current selection: " + str(self._currentshape)))
-        self._labelcurrentshape.grid(column=0, row = 2, columnspan= 3)
+        self._shapemenu = Selectionmenu(master= self._root, title='Shapes', names=['rectangle', 'oval', 'line'])
+        self._shapemenu.frame.grid(column=0, row=0)
+        for i, name in enumerate(self._shapemenu.getNames()):
+            self._shapemenu.addButton(name, col=i, row=1)
         #Laying out color selection menu
-        self._colorselect = tk.Frame(self._root)
-        self._colorselect.grid(column=0, row=1)
+        self._colormenu = Selectionmenu(master=self._root,title='Colors', names=['blue','red','yellow'])
+        self._colormenu.frame.grid(column=0, row = 1)
         #Adding the widgets to the shape selection menu
-        self._colortitle = tk.Label(self._colorselect,text="Colors")
-        self._colortitle.grid(column=0, row=0, columnspan=3)
-        self._bluebutton = tk.Button(master = self._colorselect, text="Blue", relief=tk.RAISED, command=lambda color = "blue" : self.changeColor(color))
-        self._bluebutton.grid(column=0, row=1)
-        self._redbutton = tk.Button(master = self._colorselect, text="Red", relief=tk.RAISED, command=lambda color = "red" : self.changeColor(color))
-        self._redbutton.grid(column=1, row=1)
-        self._yellowbutton = tk.Button(master = self._colorselect, text="Yellow", relief=tk.RAISED, command=lambda color = "yellow" : self.changeColor(color))
-        self._yellowbutton.grid(column=2, row=1)
-        self._labelcurrentcolor = tk.Label(master=self._colorselect, text=("Current selection: " + str(self._currentcolor)))
-        self._labelcurrentcolor.grid(column=0, row = 2, columnspan= 3)
+        for i, name in enumerate(self._colormenu.getNames()):
+            self._colormenu.addButton(name, col=i, row=1)
         #Layout canvas
         self._drawingarea = tk.Canvas(master=self._root, bg ="white", height = 300, width=300)
         self._drawingarea.grid(column=1, row= 0)
@@ -53,17 +35,8 @@ class Painttk(object):
 
         self._root.mainloop()
 
-    def changeShape(self, shape):
-        self._currentshape = shape
-        self._labelcurrentshape['text'] ='Current selection: ' + shape
-
-
-    def changeColor(self, color):
-        self._currentcolor = color
-        self._labelcurrentcolor['text'] = 'Current selection: ' + color
-
     def draw(self, event):
-        if self._currentcolor == None or self._currentshape == None:
+        if self._shapemenu.currentselec == None or self._colormenu.currentselec == None:
             print("No color or shape selected")
             return
         self._x1 = event.x
@@ -75,7 +48,7 @@ class Painttk(object):
         self._x2 = event.x
         self._y2 = event.y
         #Here we are adjusting the coordinates according to where the user clicked
-        if self._currentshape == 'rectangle' or self._currentshape == 'oval':
+        if self._shapemenu.currentselec == 'rectangle' or self._shapemenu.currentselec == 'oval':
             if self._x1 - self._x2 > 0:
                 a = self._x1 
                 self._x1 = self._x2
@@ -84,12 +57,12 @@ class Painttk(object):
                 b = self._y1
                 self._y1 = self._y2
                 self._y2 = b
-        if self._currentshape == 'rectangle':
-            self._drawingarea.create_rectangle(self._x1, self._y1, self._x2, self._y2, fill=self._currentcolor)
-        if self._currentshape == 'oval':
-            self._drawingarea.create_oval(self._x1, self._y1, self._x2, self._y2, fill=self._currentcolor)
-        if self._currentshape == 'line':
-            self._drawingarea.create_line(self._x1, self._y1, self._x2, self._y2, fill=self._currentcolor)
+        if self._shapemenu.currentselec == 'rectangle':
+            self._drawingarea.create_rectangle(self._x1, self._y1, self._x2, self._y2, fill=self._colormenu.currentselec)
+        if self._shapemenu.currentselec == 'oval':
+            self._drawingarea.create_oval(self._x1, self._y1, self._x2, self._y2, fill=self._colormenu.currentselec)
+        if self._shapemenu.currentselec == 'line':
+            self._drawingarea.create_line(self._x1, self._y1, self._x2, self._y2, fill=self._colormenu.currentselec)
         self._drawingarea.unbind("<Button-1>")
         self._drawingarea.bind("<Button-1>", self.draw)
 
@@ -99,5 +72,5 @@ class Painttk(object):
 
 
 
-
-app = Painttk()
+if __name__ == '__main__':
+    app = Painttk()
